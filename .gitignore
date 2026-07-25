@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.env
+
+# Data (generated, not source-controlled)
+raw_data/*
+!raw_data/.gitkeep
+clean_data/*
+!clean_data/.gitkeep
+logs/*
+!logs/.gitkeep
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

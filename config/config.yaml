@@ -1,0 +1,26 @@
+generator:
+  num_experiments: 5000
+  seed: 42
+  output_path: "raw_data/experiments_raw.json"
+
+database:
+  host: "localhost"
+  port: 5432
+  dbname: "ai_model_insight"
+  user: "postgres"
+  # password must come from an environment variable (DB_PASSWORD), never hardcoded here
+  staging_schema: "staging"
+  warehouse_schema: "warehouse"
+
+etl:
+  clean_output_path: "clean_data/experiments_clean.csv"
+  missing_value_strategy: "median"  # options: median, drop, flag
+
+spark:
+  app_name: "AIModelInsightPlatform"
+  master: "local[*]"
+  parquet_output_path: "clean_data/parquet/"
+
+logging:
+  level: "INFO"
+  log_file: "logs/pipeline.log"
