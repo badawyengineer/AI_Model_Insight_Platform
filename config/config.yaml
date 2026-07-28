@@ -2,6 +2,11 @@ generator:
   num_experiments: 5000
   seed: 42
   output_path: "raw_data/experiments_raw.json"
+  status_distribution:
+    success: 0.85
+    failed: 0.08
+    killed: 0.03
+    running: 0.04
 
 database:
   host: "localhost"
