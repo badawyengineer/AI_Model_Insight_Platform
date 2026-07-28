@@ -26,6 +26,10 @@ spark:
   master: "local[*]"
   parquet_output_path: "clean_data/parquet/"
 
+warehouse:
+  date_range_start: "2020-01-01"
+  date_range_end: "2030-12-31"
+
 logging:
   level: "INFO"
   log_file: "logs/pipeline.log"
