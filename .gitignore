@@ -19,3 +19,13 @@ logs/*
 # IDE
 .vscode/
 .idea/
+
+# Milestone 7: MLflow tracking store + ML artifacts (generated, not
+# source-controlled - same reasoning as raw_data/clean_data above)
+mlflow.db
+mlruns/
+mlartifacts/
+models/*
+!models/.gitkeep
+raw_data/torch_datasets/
+raw_data/mlflow_runs_raw.json

@@ -109,9 +109,14 @@ def build_and_load_dimensions(engine, schema_name: str, staging_df: pd.DataFrame
     )
     upsert_dimension(engine, schema_name, "dim_researcher", ["researcher_name"], dim_researcher)
 
-    dim_experiment = staging_df[["experiment_id", "learning_rate", "batch_size", "epochs"]].drop_duplicates(
-        subset="experiment_id"
-    )
+    experiment_cols = ["experiment_id", "learning_rate", "batch_size", "epochs"]
+    # source/mlflow_run_id/mlflow_experiment_name were added in Milestone 7.
+    # Guard with a column check so this keeps working unmodified against
+    # any staging table that predates the migration.
+    for optional_col in ("source", "mlflow_run_id", "mlflow_experiment_name"):
+        if optional_col in staging_df.columns:
+            experiment_cols.append(optional_col)
+    dim_experiment = staging_df[experiment_cols].drop_duplicates(subset="experiment_id")
     upsert_dimension(engine, schema_name, "dim_experiment", ["experiment_id"], dim_experiment)
 
 

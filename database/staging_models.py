@@ -63,3 +63,10 @@ class StagingExperiment(Base):
 
     timestamp: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False)
+
+    # --- Provenance (Milestone 7) ---
+    # Nullable/defaulted so this stays compatible with any pre-Milestone-7
+    # staging rows; new loads always populate `source` via the ETL layer.
+    source: Mapped[str] = mapped_column(String(20), nullable=False, server_default="synthetic")
+    mlflow_run_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    mlflow_experiment_name: Mapped[str | None] = mapped_column(String(150), nullable=True)

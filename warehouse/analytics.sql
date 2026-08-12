@@ -191,3 +191,26 @@ SELECT
     ) AS rolling_7day_avg_accuracy
 FROM daily
 ORDER BY full_date;
+
+
+-- ---------------------------------------------------------------------
+-- 9. vw_experiment_source_breakdown  (Milestone 7)
+-- Compares synthetic (Milestone 2) vs. real MLflow-tracked training
+-- runs side by side, so the dashboard can show that this is now a
+-- platform with real ML experiments flowing through it, not only
+-- generated data. RANK() breaks ties on avg accuracy within a source.
+-- ---------------------------------------------------------------------
+
+CREATE OR REPLACE VIEW warehouse.vw_experiment_source_breakdown AS
+SELECT
+    e.source,
+    COUNT(*)                                                                AS total_runs,
+    COUNT(*) FILTER (WHERE f.status = 'success')                            AS successful_runs,
+    ROUND(AVG(f.accuracy) FILTER (WHERE f.status = 'success')::numeric, 4)  AS avg_accuracy,
+    ROUND(AVG(f.training_time_sec)::numeric, 2)                            AS avg_training_time_sec,
+    MIN(f.run_timestamp)                                                    AS earliest_run,
+    MAX(f.run_timestamp)                                                    AS latest_run,
+    RANK() OVER (ORDER BY AVG(f.accuracy) FILTER (WHERE f.status = 'success') DESC) AS accuracy_rank
+FROM warehouse.fact_training_run f
+JOIN warehouse.dim_experiment e ON f.experiment_key = e.experiment_key
+GROUP BY e.source;

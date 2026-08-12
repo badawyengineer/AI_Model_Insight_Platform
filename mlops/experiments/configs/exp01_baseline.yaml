@@ -1,0 +1,12 @@
+name: exp01_baseline
+model_name: SimpleCNN
+learning_rate: 0.001
+batch_size: 32
+epochs: 3
+optimizer: Adam
+scheduler: Constant
+base_channels: 32
+dropout: 0.25
+random_seed: 42
+train_subset_size: 2000
+val_subset_size: 500

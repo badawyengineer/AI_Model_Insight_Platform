@@ -1,0 +1,12 @@
+name: exp04_wider_model
+model_name: SimpleCNN-Wide
+learning_rate: 0.001
+batch_size: 64
+epochs: 3
+optimizer: AdamW
+scheduler: OneCycle
+base_channels: 64
+dropout: 0.3
+random_seed: 42
+train_subset_size: 2000
+val_subset_size: 500

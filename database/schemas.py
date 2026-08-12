@@ -69,3 +69,13 @@ class ExperimentRecord(BaseModel):
     # --- Metadata ---
     timestamp: datetime
     status: ExperimentStatus
+
+    # --- Provenance (Milestone 7: real ML experiments via MLflow) ---
+    # Additive + defaulted so every Milestone 1-6 record (and the
+    # synthetic generator, which never sets these) keeps validating
+    # exactly as before. "mlflow" records are real PyTorch training
+    # runs whose metadata was extracted from an MLflow tracking server;
+    # "synthetic" is the Faker-generated data from Milestone 2.
+    source: Literal["synthetic", "mlflow"] = "synthetic"
+    mlflow_run_id: Optional[str] = None
+    mlflow_experiment_name: Optional[str] = None

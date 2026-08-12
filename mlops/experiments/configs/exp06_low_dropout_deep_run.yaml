@@ -1,0 +1,12 @@
+name: exp06_low_dropout_deep_run
+model_name: SimpleCNN
+learning_rate: 0.002
+batch_size: 16
+epochs: 3
+optimizer: Adam
+scheduler: StepLR
+base_channels: 48
+dropout: 0.1
+random_seed: 99
+train_subset_size: 2000
+val_subset_size: 500

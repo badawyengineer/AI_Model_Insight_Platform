@@ -4,3 +4,16 @@ python-dotenv>=1.0
 pandas>=2.0
 sqlalchemy>=2.0
 psycopg2-binary>=2.9
+
+# Milestone 7: real ML experiments + MLflow experiment tracking
+torch>=2.2
+torchvision>=0.17
+mlflow>=2.10
+psutil>=5.9
+
+# Milestone 7: test suite
+pytest>=8.0
+
+# Optional: training-curve PNG artifact (mlops/experiments/train.py
+# degrades gracefully - skips that one artifact - if not installed)
+matplotlib>=3.8

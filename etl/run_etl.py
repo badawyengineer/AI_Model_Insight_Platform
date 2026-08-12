@@ -12,6 +12,7 @@ Usage:
 
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 from pathlib import Path
@@ -47,7 +48,20 @@ def write_rejected_records(rejected: list[dict], path: str | Path) -> None:
         logger.info("Wrote %d rejected records to %s", len(rejected), path)
 
 
-def run_etl() -> None:
+def run_etl(extra_sources: list[str | Path] | None = None) -> None:
+    """
+    Run the ETL pipeline.
+
+    Args:
+        extra_sources: Optional list of additional raw JSON file paths to
+            extract and merge in alongside the synthetic generator's
+            output (e.g. the MLflow run-metadata extraction from
+            Milestone 7, at config["mlops"]["mlflow_raw_output_path"]).
+            Defaults to None, which reproduces the exact Milestone 1-6
+            behavior of reading only the synthetic generator's output.
+            Missing/not-yet-generated extra source files are skipped
+            with a warning rather than failing the whole run.
+    """
     config = load_config()
     _setup_logging(
         level=config.get("logging", {}).get("level", "INFO"),
@@ -61,6 +75,16 @@ def run_etl() -> None:
 
     # --- Extract ---
     raw_records = extract_raw_records(generator_cfg["output_path"])
+
+    for source_path in extra_sources or []:
+        try:
+            raw_records = raw_records + extract_raw_records(source_path)
+        except FileNotFoundError:
+            logger.warning(
+                "Skipping extra source %s (not found yet — run its "
+                "extraction step first)",
+                source_path,
+            )
 
     # --- Validate ---
     valid_records, rejected_records = validate_records(raw_records)
@@ -88,5 +112,28 @@ def run_etl() -> None:
     )
 
 
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Run the ETL pipeline.")
+    parser.add_argument(
+        "--include-mlflow",
+        action="store_true",
+        help=(
+            "Also extract MLflow run metadata (config['mlops']"
+            "['mlflow_raw_output_path']) and merge it in alongside the "
+            "synthetic generator output. No effect on Milestone 1-6 "
+            "behavior when omitted."
+        ),
+    )
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    run_etl()
+    args = _parse_args()
+    if args.include_mlflow:
+        cfg = load_config()
+        mlflow_raw_path = cfg.get("mlops", {}).get(
+            "mlflow_raw_output_path", "raw_data/mlflow_runs_raw.json"
+        )
+        run_etl(extra_sources=[mlflow_raw_path])
+    else:
+        run_etl()

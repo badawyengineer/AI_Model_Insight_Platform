@@ -1,0 +1,12 @@
+name: exp02_high_lr
+model_name: SimpleCNN
+learning_rate: 0.01
+batch_size: 32
+epochs: 3
+optimizer: Adam
+scheduler: CosineAnnealing
+base_channels: 32
+dropout: 0.25
+random_seed: 42
+train_subset_size: 2000
+val_subset_size: 500

@@ -1,0 +1,12 @@
+name: exp03_sgd_large_batch
+model_name: SimpleCNN
+learning_rate: 0.01
+batch_size: 128
+epochs: 4
+optimizer: SGD
+scheduler: StepLR
+base_channels: 32
+dropout: 0.25
+random_seed: 7
+train_subset_size: 2000
+val_subset_size: 500

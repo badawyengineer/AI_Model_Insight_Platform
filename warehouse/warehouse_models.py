@@ -108,6 +108,14 @@ class DimExperiment(Base):
     batch_size: Mapped[int] = mapped_column(Integer, nullable=False)
     epochs: Mapped[int] = mapped_column(Integer, nullable=False)
 
+    # --- Provenance (Milestone 7) ---
+    # Lets analytical SQL / dashboards distinguish real MLflow-tracked
+    # training runs from Milestone 2's synthetic data without touching
+    # the fact table's grain or any other dimension.
+    source: Mapped[str] = mapped_column(String(20), nullable=False, server_default="synthetic")
+    mlflow_run_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    mlflow_experiment_name: Mapped[str | None] = mapped_column(String(150), nullable=True)
+
 
 class DimDate(Base):
     __tablename__ = "dim_date"

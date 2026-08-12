@@ -1,0 +1,12 @@
+name: exp05_rmsprop_more_epochs
+model_name: SimpleCNN
+learning_rate: 0.0005
+batch_size: 32
+epochs: 6
+optimizer: RMSprop
+scheduler: Constant
+base_channels: 32
+dropout: 0.2
+random_seed: 123
+train_subset_size: 2000
+val_subset_size: 500

@@ -33,3 +33,18 @@ warehouse:
 logging:
   level: "INFO"
   log_file: "logs/pipeline.log"
+
+# Milestone 7: real ML experiments + MLflow experiment tracking.
+# MLFLOW_TRACKING_URI can override tracking_uri via environment variable
+# (see mlflow/tracking.py) so CI/other machines don't need to edit this file.
+mlops:
+  # sqlite backend (not the plain file store) - the file store is in
+  # MLflow maintenance mode as of MLflow 3.x, so sqlite is the
+  # recommended local/no-server option going forward.
+  tracking_uri: "sqlite:///mlflow.db"
+  experiment_name: "ai-model-insight-platform"
+  mlflow_raw_output_path: "raw_data/mlflow_runs_raw.json"
+  configs_dir: "mlops/experiments/configs"
+  dataset: "CIFAR10"
+  data_dir: "raw_data/torch_datasets"
+  researcher: "Abdelrahman"
