@@ -74,9 +74,45 @@ implementation notes):
 - [x] Tests added and passing; `requirements.txt`, README, and this roadmap
       updated; no secrets committed
 
-## 🔜 Milestone 8 — Orchestration (Airflow)
-Schedule and monitor the generator/ETL/staging/warehouse/MLOps pipeline as
-a DAG instead of manually-run scripts.
+## ✅ Milestone 8 — Orchestration (Airflow)
+Schedules and monitors the full pipeline as a DAG instead of manually-run
+scripts, without loading any ML dependencies into the Airflow worker
+itself.
+
+- `orchestration/dags/ai_model_insight_pipeline_dag.py`: one `BashOperator`
+  task per stage (`generate_synthetic_data` → one task per experiment
+  config → `extract_mlflow_metadata` → `run_etl --include-mlflow` →
+  `load_staging` → `build_dim_date` → `transform_load` →
+  `apply_analytics_sql`), each shelling out to the project's own venv
+  (configurable via the `ai_model_insight_project_dir` /
+  `ai_model_insight_python_bin` Airflow Variables) rather than requiring
+  torch/mlflow inside Airflow's own environment
+- `warehouse/apply_analytics.py`: new `python -m` entry point for
+  `analytics.sql` (previously a manual `psql -f` step), so the analytics
+  layer has the same scriptable interface as every other stage
+- `tests/test_airflow_dag.py`: DAG structure tests (no cycles, correct
+  dependency chain, every task is a `BashOperator`) — auto-skips if
+  `apache-airflow` isn't installed, since it's an optional dependency kept
+  out of the core `requirements.txt`
+- `tests/test_apply_analytics.py`: regression test against a real bug
+  found during development — a naive comment-stripping filter silently
+  dropped every `CREATE VIEW` statement (each has a comment header) while
+  `CREATE INDEX` statements kept working, so the failure was easy to miss
+
+**Note:** this folder is named `orchestration/`, not `airflow/` — a folder
+literally named `airflow/` at the repo root shadows the real installed
+`airflow` package for any code (including `pytest`) run with the repo
+root on `sys.path`. Caught this exact collision during development.
+
+**Completion criteria:**
+- [x] Full pipeline runs as an Airflow DAG (13 tasks: generate + 6 training
+      + extract + ETL + staging + build_dim_date + transform_load + analytics)
+- [x] Verified end-to-end via `airflow tasks test` against a real Postgres
+      instance: every task succeeds, and the resulting warehouse data
+      matches what running the stages manually produces
+- [x] DAG structure tests added and passing
+- [x] Airflow kept as an isolated, optional dependency (own venv, own
+      constraints file) — the core project's `requirements.txt` is unchanged
 
 ## 🔜 Milestone 9 — Containerization (Docker)
 Package the platform (app + Postgres + MLflow) as Docker/Compose services

@@ -29,3 +29,9 @@ models/*
 !models/.gitkeep
 raw_data/torch_datasets/
 raw_data/mlflow_runs_raw.json
+
+# Milestone 8: Airflow's own metadata DB / logs if AIRFLOW_HOME is
+# ever pointed inside the repo (it shouldn't be, but just in case)
+airflow_home/
+airflow.db
+airflow-webserver.pid

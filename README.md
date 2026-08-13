@@ -12,10 +12,11 @@ histories *and* real PyTorch training runs tracked in MLflow.
 
 ## Status
 
-✅ Milestones 1-7 complete. Milestone 7 (Real ML Experiment Tracking & MLOps
-Integration) evolved the platform from a synthetic-data-only warehouse into
-one that also ingests real, MLflow-tracked ML experiments through the same
-ETL/warehouse pipeline.
+✅ Milestones 1-8 complete. Milestone 7 (Real ML Experiment Tracking &
+MLOps Integration) evolved the platform from a synthetic-data-only
+warehouse into one that also ingests real, MLflow-tracked ML experiments
+through the same ETL/warehouse pipeline. Milestone 8 (Orchestration)
+schedules that entire pipeline as an Airflow DAG.
 
 ## Scope
 
@@ -32,6 +33,7 @@ ETL/warehouse pipeline.
   synthetic-vs-real source breakdown view
 - Power BI executive dashboard
 - Full documentation (architecture, ER diagram, star schema diagram)
+- **Orchestration**: the full pipeline as an Airflow DAG — Milestone 8
 
 ## Architecture
 
@@ -59,6 +61,8 @@ AI_Model_Insight_Platform/
 │   │   └── configs/      #   experiments/configs/*.yaml — one file per experiment
 │   ├── mlflow/            #   tracking.py (init + system metadata), extract_runs.py
 │   └── pipeline/           #   run_mlops_pipeline.py — end-to-end orchestration
+├── orchestration/          # Milestone 8: Airflow DAG (see orchestration/README.md
+│   └── dags/                #   for why this isn't named airflow/)
 ├── etl/                   # Extract, validate, clean pipeline (shared by all sources)
 ├── database/               # Schemas, staging models, DB access
 ├── spark/                    # Spark transformation jobs
@@ -138,4 +142,28 @@ Run the test suite (no GPU or live database required for most tests):
 ```bash
 pytest tests/ -v
 ```
+
+## Milestone 8: Orchestration (Airflow)
+
+The full pipeline above (train → extract → ETL → staging → warehouse →
+analytics) runs as a single Airflow DAG instead of manual commands. See
+`orchestration/README.md` for full setup — short version:
+
+```bash
+# Airflow lives in its own venv, separate from the project's (requirements.txt
+# intentionally doesn't include apache-airflow - see orchestration/README.md)
+python -m venv airflow_venv && source airflow_venv/bin/activate
+pip install apache-airflow==2.10.5 --constraint <official-constraints-url>
+
+export AIRFLOW_HOME=~/airflow_home
+mkdir -p "$AIRFLOW_HOME/dags"
+cp orchestration/dags/ai_model_insight_pipeline_dag.py "$AIRFLOW_HOME/dags/"
+airflow db migrate
+
+airflow variables set ai_model_insight_project_dir /absolute/path/to/AI_Model_Insight_Platform
+airflow variables set ai_model_insight_python_bin /absolute/path/to/AI_Model_Insight_Platform/venv/bin/python
+
+airflow standalone   # then trigger `ai_model_insight_pipeline` in the UI
+```
+
 
