@@ -35,3 +35,7 @@ raw_data/mlflow_runs_raw.json
 airflow_home/
 airflow.db
 airflow-webserver.pid
+
+# Milestone 9: Docker Compose local secrets file - never commit real
+# credentials, .env.example is the checked-in template
+.env

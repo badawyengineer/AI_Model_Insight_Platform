@@ -12,11 +12,12 @@ histories *and* real PyTorch training runs tracked in MLflow.
 
 ## Status
 
-✅ Milestones 1-8 complete. Milestone 7 (Real ML Experiment Tracking &
+✅ Milestones 1-9 complete. Milestone 7 (Real ML Experiment Tracking &
 MLOps Integration) evolved the platform from a synthetic-data-only
 warehouse into one that also ingests real, MLflow-tracked ML experiments
 through the same ETL/warehouse pipeline. Milestone 8 (Orchestration)
-schedules that entire pipeline as an Airflow DAG.
+schedules that entire pipeline as an Airflow DAG. Milestone 9
+(Containerization) packages everything as Docker Compose services.
 
 ## Scope
 
@@ -34,6 +35,8 @@ schedules that entire pipeline as an Airflow DAG.
 - Power BI executive dashboard
 - Full documentation (architecture, ER diagram, star schema diagram)
 - **Orchestration**: the full pipeline as an Airflow DAG — Milestone 8
+- **Containerization**: Docker Compose spins up Postgres, MLflow, the app,
+  and Airflow with one command — Milestone 9
 
 ## Architecture
 
@@ -63,6 +66,8 @@ AI_Model_Insight_Platform/
 │   └── pipeline/           #   run_mlops_pipeline.py — end-to-end orchestration
 ├── orchestration/          # Milestone 8: Airflow DAG (see orchestration/README.md
 │   └── dags/                #   for why this isn't named airflow/)
+├── docker/                  # Milestone 9: Dockerfiles + Postgres init script
+│                              #   (docker-compose.yml lives at repo root)
 ├── etl/                   # Extract, validate, clean pipeline (shared by all sources)
 ├── database/               # Schemas, staging models, DB access
 ├── spark/                    # Spark transformation jobs

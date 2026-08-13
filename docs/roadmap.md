@@ -114,9 +114,54 @@ root on `sys.path`. Caught this exact collision during development.
 - [x] Airflow kept as an isolated, optional dependency (own venv, own
       constraints file) — the core project's `requirements.txt` is unchanged
 
-## 🔜 Milestone 9 — Containerization (Docker)
-Package the platform (app + Postgres + MLflow) as Docker/Compose services
-for one-command local spin-up.
+## ✅ Milestone 9 — Containerization (Docker)
+Packages the platform as Docker/Compose services for one-command local
+spin-up, replacing the manual "install Postgres, create a venv, install
+Airflow in a second venv" setup used through Milestone 8.
+
+- `docker/app.Dockerfile`: the project's full code + dependencies
+  (torch, mlflow, sqlalchemy, ...). Every pipeline stage runs from this
+  one image via `docker compose run --rm app python -m <module>` — no
+  per-stage image, no hidden "run everything" entrypoint
+- `docker/mlflow.Dockerfile`: a standalone, deliberately lightweight
+  MLflow tracking server (no torch) reachable over the network at
+  `http://mlflow:5000`, instead of a per-container local sqlite file
+- `docker/airflow.Dockerfile`: extends `apache/airflow` with this
+  project's `requirements.txt` installed directly into it — inside
+  Docker every service is already isolated per-container, so (unlike
+  the bare-metal setup in `orchestration/README.md`) there's no reason
+  to keep Airflow and the project in separate images
+- `docker/postgres/init-airflow-db.sh`: creates a second `airflow`
+  database alongside the app's `ai_model_insight` one, so a single
+  Postgres container serves both
+- `docker-compose.yml`: wires all 6 services (`postgres`, `mlflow`,
+  `app`, `airflow-init`, `airflow-webserver`, `airflow-scheduler`)
+  together — healthchecks, `depends_on` conditions, a shared YAML
+  anchor for the three Airflow services' environment (so they can't
+  drift apart), and named volumes for data persistence
+- `database/db_connection.py`: added `DB_HOST`/`DB_PORT` environment
+  overrides (on top of `config.yaml`'s `localhost` default) — Postgres
+  is reachable by its Compose service name, not `localhost`, without
+  hardcoding that into `config.yaml`
+- `tests/test_docker_compose.py`, `tests/test_db_connection.py`:
+  validate the compose file's structure and the new env-var override
+  logic without needing container-registry access
+
+**Completion criteria:**
+- [x] `docker-compose.yml` + all 3 Dockerfiles validated: YAML parses,
+      `docker compose config` fully resolves (env interpolation, the
+      shared Airflow anchor, volumes, `depends_on` conditions), and
+      every Dockerfile was confirmed syntactically valid by Docker
+      itself (each build reached and only failed at the final
+      "pull the base image from Docker Hub" step, in a sandboxed dev
+      environment whose network policy blocks registry access — not a
+      configuration error)
+- [x] `DB_HOST`/`DB_PORT` overrides added and tested; bare-metal setups
+      that don't set them are unaffected
+- [x] Structural tests added and passing
+- [ ] Actual `docker compose build`/`up` end-to-end run — needs
+      verifying in an environment with real Docker Hub access (see
+      `docker/README.md`)
 
 ## 🔜 Milestone 10 — Cloud Deployment
 Move staging/warehouse to a managed Postgres service and MLflow to a

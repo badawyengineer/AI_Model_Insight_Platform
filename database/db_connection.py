@@ -2,10 +2,11 @@
 db_connection.py
 
 Single source of truth for creating a SQLAlchemy engine connected to the
-project's PostgreSQL database. All connection parameters (host, port,
-dbname, user) come from config.yaml; the password is read exclusively
-from the DB_PASSWORD environment variable — it is never stored in any
-config file or committed to git.
+project's PostgreSQL database. Connection parameters (dbname, user) come
+from config.yaml; host/port default to config.yaml but can be overridden
+by DB_HOST/DB_PORT (Milestone 9: Docker Compose service names); the
+password is read exclusively from the DB_PASSWORD environment variable —
+it is never stored in any config file or committed to git.
 
 Every module that needs a database connection (staging loader, warehouse
 loader, future analytics scripts) should import `get_engine()` from here
@@ -15,6 +16,7 @@ rather than building its own connection string.
 from __future__ import annotations
 
 import logging
+import os
 
 from sqlalchemy import Engine, create_engine
 
@@ -26,15 +28,25 @@ logger = logging.getLogger(__name__)
 def build_connection_url(config: dict | None = None) -> str:
     """
     Build a PostgreSQL SQLAlchemy connection URL from config.yaml +
-    the DB_PASSWORD environment variable.
+    environment variables.
+
+    DB_PASSWORD is always required from the environment (see
+    get_db_password). DB_HOST and DB_PORT are optional environment
+    overrides on top of config.yaml's database.host/port - added for
+    Milestone 9 (Docker), where the app container must reach Postgres
+    by its Compose service name (e.g. "postgres") instead of
+    "localhost", without hardcoding that into config.yaml. Local/bare-
+    metal setups that don't set these env vars are unaffected.
     """
     config = config or load_config()
     db_cfg = config["database"]
     password = get_db_password()
+    host = os.environ.get("DB_HOST", db_cfg["host"])
+    port = os.environ.get("DB_PORT", db_cfg["port"])
 
     return (
         f"postgresql+psycopg2://{db_cfg['user']}:{password}"
-        f"@{db_cfg['host']}:{db_cfg['port']}/{db_cfg['dbname']}"
+        f"@{host}:{port}/{db_cfg['dbname']}"
     )
 
 
