@@ -163,9 +163,47 @@ Airflow in a second venv" setup used through Milestone 8.
       verifying in an environment with real Docker Hub access (see
       `docker/README.md`)
 
-## 🔜 Milestone 10 — Cloud Deployment
-Move staging/warehouse to a managed Postgres service and MLflow to a
-remote tracking server with cloud artifact storage.
+## ✅ Milestone 10 — Cloud Deployment
+Moves the staging/warehouse database to managed AWS RDS PostgreSQL and
+MLflow's artifact storage to S3, with the DB password in AWS Secrets
+Manager instead of a local `.env` file. Deliberately does NOT provision
+compute (ECS/EC2) to run the app/Airflow containers or a remote MLflow
+tracking server deployment — see `docs/cloud-deployment.md` for why
+"the data layer moved to managed services" and "here's a specific
+compute platform" are kept as separate decisions.
+
+- `terraform/`: RDS PostgreSQL, an S3 bucket for MLflow artifacts
+  (versioned, encrypted, public access blocked), a Secrets Manager
+  secret for the generated DB password, and an IAM policy for
+  read/write access to the artifact bucket. Fails closed by default —
+  `allowed_cidr_blocks` is empty until explicitly set, so RDS is not
+  publicly reachable out of the box
+- `config/config_loader.py`: `get_db_password()` now checks
+  `DB_PASSWORD_SECRET_ARN` first (fetching from AWS Secrets Manager via
+  a lazily-imported `boto3`, so it stays an optional dependency) and
+  falls back to the plain `DB_PASSWORD` env var used by every earlier
+  milestone — every other module is unaffected, since they all already
+  go through this one function
+- `requirements-cloud.txt`: `boto3` + `moto` kept out of the core
+  `requirements.txt` — local/Docker-only users never need them
+- `docs/cloud-deployment.md`: full walkthrough — provision, point the
+  app at RDS + Secrets Manager, point MLflow at S3, verify, tear down
+- `tests/test_secrets_manager.py`: 4 tests against a real moto-mocked
+  AWS Secrets Manager (not hand-rolled stubs) — no AWS account needed
+
+**Completion criteria:**
+- [x] Terraform provisions RDS + S3 + Secrets Manager + IAM policy;
+      every `.tf` file confirmed syntactically valid (`python-hcl2`)
+      since the `terraform` CLI itself wasn't installable in this
+      sandbox — run `terraform validate`/`plan` yourself before applying
+- [x] `DB_PASSWORD_SECRET_ARN` Secrets Manager path added, tested against
+      real (mocked) AWS calls, and confirmed to fall back correctly to
+      plain `DB_PASSWORD` when unset — Milestones 1-9 behavior unchanged
+- [x] Security fails closed: RDS not publicly reachable by default,
+      S3 bucket blocks all public access, encryption enabled on both
+- [x] Full walkthrough documented, including the explicit scope
+      boundary (data layer only, not a compute/deployment platform
+      decision)
 
 ## 🔜 Milestone 11 — Streaming & Advanced Monitoring
 Real-time experiment/prediction-log ingestion, drift detection, and

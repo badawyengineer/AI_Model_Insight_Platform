@@ -39,3 +39,16 @@ airflow-webserver.pid
 # Milestone 9: Docker Compose local secrets file - never commit real
 # credentials, .env.example is the checked-in template
 .env
+
+# Milestone 10: Terraform state and variable files - state can contain
+# resource attributes in plaintext, tfvars can contain values like
+# allowed_cidr_blocks that shouldn't be assumed public
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/terraform.tfvars
+terraform/*.auto.tfvars
+terraform/crash.log
+# NOTE: .terraform.lock.hcl is intentionally NOT ignored - like a
+# package-lock.json, it should be committed so everyone applying this
+# gets the same provider versions.

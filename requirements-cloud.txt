@@ -1,0 +1,12 @@
+# requirements-cloud.txt
+#
+# Milestone 10: Cloud Deployment. Optional - only needed if you're using
+# AWS Secrets Manager (DB_PASSWORD_SECRET_ARN) or running the moto-mocked
+# tests in tests/test_secrets_manager.py. Kept separate from the core
+# requirements.txt so local/Docker-only users never need boto3.
+
+boto3>=1.34
+
+# For running tests/test_secrets_manager.py locally (mocks AWS, no real
+# account needed):
+moto[secretsmanager]>=5.0

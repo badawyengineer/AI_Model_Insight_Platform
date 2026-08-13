@@ -12,12 +12,14 @@ histories *and* real PyTorch training runs tracked in MLflow.
 
 ## Status
 
-✅ Milestones 1-9 complete. Milestone 7 (Real ML Experiment Tracking &
+✅ Milestones 1-10 complete. Milestone 7 (Real ML Experiment Tracking &
 MLOps Integration) evolved the platform from a synthetic-data-only
 warehouse into one that also ingests real, MLflow-tracked ML experiments
 through the same ETL/warehouse pipeline. Milestone 8 (Orchestration)
 schedules that entire pipeline as an Airflow DAG. Milestone 9
 (Containerization) packages everything as Docker Compose services.
+Milestone 10 (Cloud Deployment) moves the data layer to managed AWS
+services (RDS, S3, Secrets Manager) via Terraform.
 
 ## Scope
 
@@ -37,6 +39,8 @@ schedules that entire pipeline as an Airflow DAG. Milestone 9
 - **Orchestration**: the full pipeline as an Airflow DAG — Milestone 8
 - **Containerization**: Docker Compose spins up Postgres, MLflow, the app,
   and Airflow with one command — Milestone 9
+- **Cloud Deployment**: Terraform-provisioned RDS + S3 + Secrets Manager
+  as an alternative to local/Docker Postgres — Milestone 10
 
 ## Architecture
 
@@ -68,6 +72,7 @@ AI_Model_Insight_Platform/
 │   └── dags/                #   for why this isn't named airflow/)
 ├── docker/                  # Milestone 9: Dockerfiles + Postgres init script
 │                              #   (docker-compose.yml lives at repo root)
+├── terraform/                # Milestone 10: RDS + S3 + Secrets Manager (see terraform/README.md)
 ├── etl/                   # Extract, validate, clean pipeline (shared by all sources)
 ├── database/               # Schemas, staging models, DB access
 ├── spark/                    # Spark transformation jobs
