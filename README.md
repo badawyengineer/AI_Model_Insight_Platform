@@ -12,14 +12,17 @@ histories *and* real PyTorch training runs tracked in MLflow.
 
 ## Status
 
-✅ Milestones 1-10 complete. Milestone 7 (Real ML Experiment Tracking &
-MLOps Integration) evolved the platform from a synthetic-data-only
-warehouse into one that also ingests real, MLflow-tracked ML experiments
-through the same ETL/warehouse pipeline. Milestone 8 (Orchestration)
-schedules that entire pipeline as an Airflow DAG. Milestone 9
-(Containerization) packages everything as Docker Compose services.
-Milestone 10 (Cloud Deployment) moves the data layer to managed AWS
-services (RDS, S3, Secrets Manager) via Terraform.
+✅ Milestones 1-11 complete — the full originally-planned roadmap.
+Milestone 7 (Real ML Experiment Tracking & MLOps Integration) evolved
+the platform from a synthetic-data-only warehouse into one that also
+ingests real, MLflow-tracked ML experiments through the same
+ETL/warehouse pipeline. Milestone 8 (Orchestration) schedules that
+entire pipeline as an Airflow DAG. Milestone 9 (Containerization)
+packages everything as Docker Compose services. Milestone 10 (Cloud
+Deployment) moves the data layer to managed AWS services (RDS, S3,
+Secrets Manager) via Terraform. Milestone 11 (Streaming & Advanced
+Monitoring) adds real-time prediction-event ingestion (Redis Streams),
+PSI-based drift detection, and alerting, on its own Airflow schedule.
 
 ## Scope
 
@@ -41,6 +44,8 @@ services (RDS, S3, Secrets Manager) via Terraform.
   and Airflow with one command — Milestone 9
 - **Cloud Deployment**: Terraform-provisioned RDS + S3 + Secrets Manager
   as an alternative to local/Docker Postgres — Milestone 10
+- **Streaming & Monitoring**: real-time prediction ingestion (Redis
+  Streams), PSI drift detection, and alerting — Milestone 11
 
 ## Architecture
 
@@ -73,6 +78,8 @@ AI_Model_Insight_Platform/
 ├── docker/                  # Milestone 9: Dockerfiles + Postgres init script
 │                              #   (docker-compose.yml lives at repo root)
 ├── terraform/                # Milestone 10: RDS + S3 + Secrets Manager (see terraform/README.md)
+├── streaming/                 # Milestone 11: Redis Streams producer/consumer (see streaming/README.md)
+├── monitoring/                 # Milestone 11: PSI drift detection + alerting
 ├── etl/                   # Extract, validate, clean pipeline (shared by all sources)
 ├── database/               # Schemas, staging models, DB access
 ├── spark/                    # Spark transformation jobs

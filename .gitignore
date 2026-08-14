@@ -52,3 +52,8 @@ terraform/crash.log
 # NOTE: .terraform.lock.hcl is intentionally NOT ignored - like a
 # package-lock.json, it should be committed so everyone applying this
 # gets the same provider versions.
+
+# Milestone 11: local Redis persistence file, if redis-server is ever
+# run with its working directory inside the repo
+dump.rdb
+

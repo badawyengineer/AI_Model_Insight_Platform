@@ -17,3 +17,8 @@ pytest>=8.0
 # Optional: training-curve PNG artifact (mlops/experiments/train.py
 # degrades gracefully - skips that one artifact - if not installed)
 matplotlib>=3.8
+
+# Milestone 11: streaming ingestion (Redis Streams) + drift detection + alerting
+redis>=5.0
+numpy>=1.26
+requests>=2.31

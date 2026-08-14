@@ -205,6 +205,54 @@ compute platform" are kept as separate decisions.
       boundary (data layer only, not a compute/deployment platform
       decision)
 
-## 🔜 Milestone 11 — Streaming & Advanced Monitoring
-Real-time experiment/prediction-log ingestion, drift detection, and
-alerting on top of the batch pipeline built in Milestones 1-7.
+## ✅ Milestone 11 — Streaming & Advanced Monitoring
+Real-time prediction-log ingestion, drift detection, and alerting on top
+of the batch pipeline built in Milestones 1-10.
+
+- `streaming/producer.py` + `streaming/consumer.py`: Redis Streams
+  ingestion (chosen deliberately over Kafka - see `streaming/README.md`
+  for why - as a genuinely lightweight, still-real streaming
+  technology for this project's scale) with proper consumer-group
+  semantics (`XREADGROUP`/`XACK`, at-least-once delivery,
+  redelivery-safe via `ON CONFLICT DO NOTHING` on the Redis stream
+  entry ID)
+- `database/monitoring_models.py`: a new `monitoring` schema/table for
+  real-time prediction events, deliberately separate from the
+  `staging`/`warehouse` star schema built for training-experiment data
+- `monitoring/drift_detection.py`: Population Stability Index (PSI)
+  drift detection. **A real false-positive bug was found and fixed
+  during development**: PSI at a naive fixed bin count is dominated by
+  sampling noise at small sample sizes — two draws from the *identical*
+  distribution at n=30 regularly exceeded the alert threshold. Fixed
+  with sample-size-adaptive binning and a config default of 200
+  events/window, verified by repeated-trial testing
+- `monitoring/alerting.py`: always logs; optionally POSTs to a
+  Slack-compatible webhook (`ALERT_WEBHOOK_URL`) — a failed webhook
+  delivery never masks the alert itself
+- `orchestration/dags/monitoring_pipeline_dag.py`: a second, separate
+  Airflow DAG on a 15-minute schedule (not bolted onto the daily
+  training pipeline — different cadence, different failure domain)
+- `tests/test_drift_detection.py`: 14 tests, including 5-seed
+  parametrized false-positive and true-positive checks at the project's
+  actual window size — a direct regression test for the bug above
+- `tests/test_streaming_integration.py`: real integration tests against
+  live Redis + PostgreSQL (not mocked) — publish, consume, and a
+  redelivery/idempotency test
+- `tests/test_alerting.py`: real local HTTP server, not a mocked
+  `requests` call, proving webhook delivery actually happens
+
+**Completion criteria:**
+- [x] Real-time ingestion works end-to-end: producer → Redis stream →
+      consumer (consumer group, at-least-once) → PostgreSQL, verified
+      with real Redis and Postgres instances, not mocks
+- [x] Drift detection correctly distinguishes stable vs. shifted
+      distributions at the project's actual configured window size —
+      verified after finding and fixing a genuine false-positive bug
+- [x] Alerting always logs, and delivers to a configured webhook,
+      verified against a real local HTTP server
+- [x] Wired into Airflow on its own schedule, verified via
+      `airflow tasks test` against real Redis/Postgres
+- [x] All new tests pass; `requirements.txt`, README, and this roadmap
+      updated
+
+This completes the originally planned Milestones 1-11.

@@ -48,3 +48,31 @@ mlops:
   dataset: "CIFAR10"
   data_dir: "raw_data/torch_datasets"
   researcher: "Abdelrahman"
+
+# Milestone 11: streaming ingestion + drift detection + alerting.
+# REDIS_URL can override redis_url via environment variable (same
+# pattern as MLFLOW_TRACKING_URI in the mlops section above).
+streaming:
+  redis_url: "redis://localhost:6379/0"
+  stream_name: "prediction_events"
+  consumer_group: "monitoring_consumers"
+  consumer_batch_size: 100
+
+monitoring:
+  # Drift is flagged when the Population Stability Index (PSI) between
+  # a recent window and a baseline window exceeds this threshold.
+  # 0.1-0.2 is the commonly cited "moderate shift, investigate" band in
+  # industry PSI literature; 0.25 is used here to reduce noise from a
+  # small monitoring window before treating it as an emitted alert.
+  psi_drift_threshold: 0.25
+  # 200 events/window keeps PSI's bin-count statistic stable (see
+  # monitoring/drift_detection.py's compute_psi docstring for the
+  # empirical false-positive-rate testing behind this number) - lower
+  # values are usable but noisier, and were observed during development
+  # to false-positive above the threshold on non-drifted data.
+  min_events_for_drift_check: 200
+  # If set (e.g. a Slack incoming webhook URL), monitoring.alerting
+  # POSTs alerts there in addition to always logging them. Left unset
+  # by default - alerts always still go to the log either way.
+  alert_webhook_url_env_var: "ALERT_WEBHOOK_URL"
+
