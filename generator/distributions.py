@@ -22,15 +22,10 @@ import random
 from typing import Optional
 
 from generator.config_pools import (
-    BATCH_SIZES,
     CPUS,
     DATASETS,
-    FRAMEWORKS,
     GPU_PROFILES,
     MODEL_PROFILES,
-    OPTIMIZERS,
-    RESEARCHERS,
-    SCHEDULERS,
 )
 
 

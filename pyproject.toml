@@ -1,0 +1,48 @@
+# pyproject.toml
+#
+# Milestone 12: ruff configuration for the CI lint job
+# (.github/workflows/tests.yml). Deliberately permissive - this is a
+# portfolio/learning project accumulated across 11 milestones with
+# varying styles, not a from-scratch codebase with one enforced
+# convention from day one. The goal is catching real bugs (unused
+# imports, undefined names) in CI, not retroactively reformatting
+# everything that already works and is tested.
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+# Generated/vendored-feeling or intentionally-excluded paths
+exclude = [
+    ".git",
+    "__pycache__",
+    "raw_data",
+    "clean_data",
+    "models",
+    "mlruns",
+    "logs",
+    "terraform/.terraform",
+]
+
+[tool.ruff.lint]
+# E/F: pyflakes + pycodestyle errors (real bugs: unused imports, undefined
+# names, etc.) - the actual point of running a linter in CI.
+# I: import sorting - cheap to enforce, easy to auto-fix, catches nothing
+# controversial.
+select = ["E", "F", "I"]
+
+# Long lines in docstrings/comments (a LOT of this project's modules have
+# deliberately long "why" comments explaining design decisions) and
+# star-import warnings in a couple of __init__.py-style files aren't
+# worth failing CI over.
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# Airflow DAG files intentionally build task lists with module-level
+# code inside a `with DAG(...) as dag:` block - not a bug, just how
+# Airflow DAGs are written.
+"orchestration/dags/*.py" = ["E402"]
+# pytest.importorskip() must run before importing the optional
+# dependency it's guarding - that's the whole point of the pattern,
+# not an import-ordering mistake.
+"tests/test_secrets_manager.py" = ["E402"]

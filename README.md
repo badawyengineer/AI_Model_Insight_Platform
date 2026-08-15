@@ -13,16 +13,21 @@ histories *and* real PyTorch training runs tracked in MLflow.
 ## Status
 
 ✅ Milestones 1-11 complete — the full originally-planned roadmap.
-Milestone 7 (Real ML Experiment Tracking & MLOps Integration) evolved
-the platform from a synthetic-data-only warehouse into one that also
-ingests real, MLflow-tracked ML experiments through the same
-ETL/warehouse pipeline. Milestone 8 (Orchestration) schedules that
-entire pipeline as an Airflow DAG. Milestone 9 (Containerization)
+Milestone 12 (CI/CD & Live Dashboard) was added afterward as an
+extension. Milestone 7 (Real ML Experiment Tracking & MLOps
+Integration) evolved the platform from a synthetic-data-only warehouse
+into one that also ingests real, MLflow-tracked ML experiments through
+the same ETL/warehouse pipeline. Milestone 8 (Orchestration) schedules
+that entire pipeline as an Airflow DAG. Milestone 9 (Containerization)
 packages everything as Docker Compose services. Milestone 10 (Cloud
 Deployment) moves the data layer to managed AWS services (RDS, S3,
 Secrets Manager) via Terraform. Milestone 11 (Streaming & Advanced
 Monitoring) adds real-time prediction-event ingestion (Redis Streams),
 PSI-based drift detection, and alerting, on its own Airflow schedule.
+Milestone 12 adds a GitHub Actions CI/CD pipeline (which also closes
+Milestone 9/10's local verification gaps for real, since GitHub's
+runners have normal Docker Hub/Terraform access) and a live Streamlit
+dashboard for the Milestone 11 streaming data.
 
 ## Scope
 
@@ -46,6 +51,9 @@ PSI-based drift detection, and alerting, on its own Airflow schedule.
   as an alternative to local/Docker Postgres — Milestone 10
 - **Streaming & Monitoring**: real-time prediction ingestion (Redis
   Streams), PSI drift detection, and alerting — Milestone 11
+- **CI/CD & Live Dashboard**: GitHub Actions test/build/validate
+  pipeline, plus a Streamlit dashboard for real-time streaming data —
+  Milestone 12
 
 ## Architecture
 
@@ -80,6 +88,8 @@ AI_Model_Insight_Platform/
 ├── terraform/                # Milestone 10: RDS + S3 + Secrets Manager (see terraform/README.md)
 ├── streaming/                 # Milestone 11: Redis Streams producer/consumer (see streaming/README.md)
 ├── monitoring/                 # Milestone 11: PSI drift detection + alerting
+├── dashboard/live/              # Milestone 12: Streamlit live monitoring dashboard
+├── .github/workflows/            # Milestone 12: CI/CD (tests, docker build, terraform validate)
 ├── etl/                   # Extract, validate, clean pipeline (shared by all sources)
 ├── database/               # Schemas, staging models, DB access
 ├── spark/                    # Spark transformation jobs

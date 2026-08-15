@@ -1,0 +1,55 @@
+name: Docker Build
+
+# Milestone 12: actually builds every image in docker-compose.yml.
+# The sandbox this project was developed in has network egress that
+# blocks Docker Hub entirely, so every Dockerfile was only verified as
+# far as "Docker parses it correctly" there - this workflow is the real
+# build verification for Milestone 9, running on GitHub's infrastructure
+# which has normal registry access.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docker/**"
+      - "docker-compose.yml"
+      - "requirements.txt"
+      - ".github/workflows/docker.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "docker/**"
+      - "docker-compose.yml"
+      - "requirements.txt"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create a throwaway .env for `docker compose config`/build
+        run: |
+          echo "DB_PASSWORD=ci_test_password" >> .env
+          echo "AIRFLOW_SECRET_KEY=ci_test_secret_key_not_for_real_use" >> .env
+
+      - name: Validate compose file
+        run: docker compose config
+
+      - name: Build app image
+        run: docker compose build app
+
+      - name: Build mlflow image
+        run: docker compose build mlflow
+
+      - name: Build airflow images
+        run: docker compose build airflow-init airflow-webserver airflow-scheduler
+
+      - name: Smoke-test the app image can actually import the project
+        run: |
+          docker compose run --rm --entrypoint python app -c "
+          import torch, mlflow, sqlalchemy, redis, numpy
+          from config.config_loader import load_config
+          load_config()
+          print('app image imports OK')
+          "

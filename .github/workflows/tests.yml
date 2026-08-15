@@ -1,0 +1,86 @@
+name: Tests
+
+# Milestone 12: runs the full test suite on every push/PR, with real
+# Postgres and Redis service containers (not mocks) - GitHub Actions'
+# runners have normal internet/Docker Hub access, unlike the sandbox
+# this project was originally developed in, so this closes a real
+# verification gap for anything that needed a live database or broker.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check .
+
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: ai_model_insight
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DB_PASSWORD: ci_test_password
+      DB_HOST: localhost
+      REDIS_URL: redis://localhost:6379/0
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install core + cloud + torch dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-cloud.txt
+          pip install pytest
+
+      - name: Run full test suite
+        run: pytest tests/ -v
+
+      - name: Create the airflow database for DAG structural tests
+        run: |
+          PGPASSWORD=ci_test_password psql -h localhost -U postgres -c "SELECT 1" || true
+
+      - name: Install Airflow and run DAG structural tests
+        run: |
+          AIRFLOW_VERSION=2.10.5
+          PYTHON_VERSION="$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
+          CONSTRAINT_URL="https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-${PYTHON_VERSION}.txt"
+          pip install "apache-airflow==${AIRFLOW_VERSION}" --constraint "${CONSTRAINT_URL}"
+          pytest tests/test_airflow_dag.py tests/test_monitoring_dag.py -v

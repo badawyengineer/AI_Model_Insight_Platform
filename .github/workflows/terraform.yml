@@ -1,0 +1,42 @@
+name: Terraform Validate
+
+# Milestone 12: real `terraform validate`/`fmt` verification for
+# Milestone 10's infrastructure code. The sandbox this project was
+# developed in couldn't install the terraform CLI at all (HashiCorp's
+# release site wasn't reachable), so every .tf file was only verified
+# with a third-party HCL parser there - this workflow runs the actual
+# tool. No AWS credentials are used or needed: `terraform validate`
+# only checks syntax/internal consistency, it never talks to AWS.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "terraform/**"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+
+      - name: terraform fmt -check
+        run: terraform fmt -check -recursive
+
+      - name: terraform init (no backend, no AWS credentials needed)
+        run: terraform init -backend=false
+
+      - name: terraform validate
+        run: terraform validate

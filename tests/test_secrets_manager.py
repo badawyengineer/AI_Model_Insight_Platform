@@ -14,8 +14,6 @@ installed, since Secrets Manager integration itself is optional.
 
 from __future__ import annotations
 
-import os
-
 import pytest
 
 boto3 = pytest.importorskip("boto3")

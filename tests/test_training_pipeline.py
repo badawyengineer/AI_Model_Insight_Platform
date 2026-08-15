@@ -9,7 +9,6 @@ synthetic dataset automatically if CIFAR-10 can't be downloaded).
 
 from __future__ import annotations
 
-import mlflow
 from mlflow.tracking import MlflowClient
 
 from mlops.experiments.train import set_seed, train_one_config

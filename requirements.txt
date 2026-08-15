@@ -22,3 +22,7 @@ matplotlib>=3.8
 redis>=5.0
 numpy>=1.26
 requests>=2.31
+
+# Milestone 12: live monitoring dashboard
+streamlit>=1.40
+plotly>=5.24

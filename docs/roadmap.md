@@ -256,3 +256,44 @@ of the batch pipeline built in Milestones 1-10.
       updated
 
 This completes the originally planned Milestones 1-11.
+
+## ✅ Milestone 12 — CI/CD Pipeline & Live Monitoring Dashboard (extension)
+Not part of the original 11-milestone plan — added afterward to close
+two real gaps: every test run had been manual, and none of Milestone
+11's real-time data had anywhere to be *seen* live.
+
+- `.github/workflows/tests.yml`: lint (`ruff`) + the full test suite
+  against real Postgres/Redis service containers on every push/PR, plus
+  the Airflow DAG structural tests
+- `.github/workflows/docker.yml`: actually builds every Docker image
+  and smoke-tests the `app` image's imports. This is the first *real*
+  build verification Milestone 9 gets — GitHub Actions runners have
+  normal Docker Hub access, unlike the sandbox this project was
+  developed in
+- `.github/workflows/terraform.yml`: `terraform fmt -check` +
+  `terraform validate` — likewise the first real verification with the
+  actual Terraform CLI, which wasn't installable during development
+- `pyproject.toml`: `ruff` config; running it against the full codebase
+  during development found and fixed 11 real (if minor) issues —
+  unused imports, unsorted import blocks
+- `dashboard/live/`: a Streamlit dashboard showing real-time prediction
+  volume, latency percentiles, and drift status per model, reusing
+  `monitoring.drift_detection.compute_psi()` directly so it can never
+  disagree with what actually triggers a real alert. Query logic
+  (`data.py`) is split from the UI layer (`app.py`) specifically so
+  it's testable with plain `pytest` against a real database
+
+**Completion criteria:**
+- [x] Full test suite runs automatically in CI against real service
+      containers (verified: 48 tests passing locally with the same
+      Postgres/Redis setup CI uses)
+- [x] Docker images build for real once pushed (closes Milestone 9's
+      sandbox verification gap)
+- [x] Terraform validates for real once pushed (closes Milestone 10's
+      sandbox verification gap)
+- [x] Live dashboard renders real data end-to-end: verified by actually
+      running `streamlit run` and confirming a real HTTP 200 response
+      with zero errors in the server log, plus 6 passing tests against
+      real Postgres/Redis data published through the actual streaming
+      pipeline
+- [x] `ruff check .` passes clean across the entire codebase

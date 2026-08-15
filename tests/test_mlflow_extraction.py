@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from database.schemas import ExperimentRecord
 from mlops.experiments.train import train_one_config
-from mlops.mlflow.extract_runs import extract_runs, run_to_experiment_record
+from mlops.mlflow.extract_runs import extract_runs
 from mlops.mlflow.tracking import init_mlflow
 
 
